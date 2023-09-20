@@ -1,60 +1,25 @@
-# ROS2 for MangoPi
-![visitors](https://visitor-badge.glitch.me/badge?page_id=polyhobbyist.mangopi&left_color=green&right_color=blue)
+# ROS2 for VisionFive 2
 
-This repository contains documentation for installing ROS2 on a Mango Pi running Ubuntu 22.04. As of February 2022, ROS2 is not distributed as an apt package or docker container for RISC-v, so must either be cross compiled or built natively. This repository contains a base image of ROS2 build using docker buildx, which has been published to a public container repo. Feel free to use this as a base image for your own docker containers.
+This repository contains documentation for installing ROS2 on a StarFive VisionFive v2 board running Ubuntu 23.04. As of September 2023, ROS2 is (still) not distributed as an apt package or docker container for RISC-V, so must either be cross compiled or built natively. This repository contains a base image of ROS2 build using docker buildx, which has been published to a public container repo. Feel free to use this as a base image for your own docker containers.
 
-## Mango Pi Setup
-  - [X] [Mango Pi 1Gig](https://a.co/d/0uBYHdL)
-  - [X] [USB-C Hub with Ethernet](https://a.co/d/07bm0wg)
-  - [X] [Ubuntu 22.04 RISC-V image](https://cdimage.ubuntu.com/releases/22.10/release/ubuntu-22.10-preinstalled-server-riscv64+licheerv.img.xz) for Mango Pi
-  - [X] [Wireless Driver manual install](https://github.com/lwfinger/rtl8723ds)
+## VisionFive 2 Setup
+  - [X] [VisionFive 2](https://www.starfivetech.com/en/site/boards)
+  - [X] [Ubuntu 22.04 RISC-V image](https://cdimage.ubuntu.com/releases/23.04/release/ubuntu-23.04-preinstalled-server-riscv64+visionfive2.img.xz) for VisionFive 2
+  - [X] [USB to Serial Converter](https://t.ly/4eLGK)
   - [X] Git
   - [X] Docker.io
   - [X] Docker-Compose
 
-> NOTE: [Visual Studio Code Remoting is not supported on RISC-V](https://github.com/microsoft/vscode-remote-release/issues/4802) as of February 22 2022; might be better to develop on a different system and deploy to the Mango Pi.
-
 ### SBC Setup
- 1. Flash a [Ubuntu 22.04 image](https://cdimage.ubuntu.com/releases/22.10/release/ubuntu-22.10-preinstalled-server-riscv64+licheerv.img.xz) to an SD Card using [Balena Etcher](https://www.balena.io/etcher)
- 1. Boot the Mango Pi with a Mini-HDMI Cable and USB-C Hub with keyboard.
+ 1. Update SPL and U-Boot described in [3.8.1. Updating SPL and U-Boot of Flash](https://doc-en.rvspace.org/VisionFive2/PDF/VisionFive2_QSG.pdf) 
+ 1. Flash a [Ubuntu 23.04 image](https://cdimage.ubuntu.com/releases/23.04/release/ubuntu-23.04-preinstalled-server-riscv64+visionfive2.img.xz) to an SD Card e.g. using [Balena Etcher](https://www.balena.io/etcher)
+ 1. Boot the VisionFive in SPI flash mode (DIP switches RGPIO_0 = 0, RGPIO_1 = 0)
  1. Install some software:
     ``` bash
     sudo apt install git
     sudo apt install docker.io
     sudo apt install docker-compose
     ```
-
- 1. After setup, setup Wifi:
-
-    ```bash 
-    mkdir ~/ext
-    cd ~/ext
-    git clone https://github.com/lwfinger/rtl8723ds
-    cd rtl8723ds
-    make
-    sudo make install
-    sudo modprobe -v 8723ds 
-    ```
-
-  1. Configure your Wifi
-
-      ```bash
-      ls /sys/class/net
-      sudo nano /etc/netplan/50-cloud-init.yaml
-      ```
-
-      ```yaml
-      network:
-        ...
-        wifis:
-          <from the class/net>:
-            optional: true
-            access-points:
-                "your ssid":
-                    password: "wifi password"
-            dhcp4: true
-      ```
-
   1. Configure docker to not require sudo (optional)
       ```bash
       sudo gpasswd -a $USER docker
@@ -67,7 +32,7 @@ This repository contains documentation for installing ROS2 on a Mango Pi running
 This method allows you to use the demo applications to validate your install; however deriving your own container from the released version is recommended.
 
 ```bash
-docker run --network host -i -t polyhobbyist/ros:humble /bin/bash
+docker run --network host -i -t slci/ros:iron /bin/bash
 ```
 
 ### Using as the root for your own container
@@ -75,7 +40,7 @@ docker run --network host -i -t polyhobbyist/ros:humble /bin/bash
 Create a dockerfile for your image (example below):
 
 ``` docker
-FROM polyhobbyist/ros:humble
+FROM slci/ros:iron
 
 RUN apt-get update && \
   apt install \
@@ -135,7 +100,5 @@ docker exec -ti <ros container> /bin/bash
 
 
 ## Resources
-- [Awesome MangoPi](https://github.com/boosterl/awesome-mango-pi-mq-pro)
-- [MangoPi SBC Repo](https://github.com/mangopi-sbc)
-
-
+- [Ubunti Wiki RISC-V/StarFive VisionFive 2](https://wiki.ubuntu.com/RISC-V/StarFive%20VisionFive%202)
+- [VisionFive 2 Single Board Computer Quick Start Guide](https://doc-en.rvspace.org/VisionFive2/PDF/VisionFive2_QSG.pdf)
